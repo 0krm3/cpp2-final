@@ -29,6 +29,7 @@ export interface PayrollRecord {
   bonus: number;
   grossPay: number;
   incomeTax: number;
+  residentTax: number;
   employeeInsurance: number;
   healthInsurance: number;
   pensionInsurance: number;
@@ -40,6 +41,7 @@ export interface PayrollRecord {
 export interface PayrollCalculation {
   grossPay: number;
   incomeTax: number;
+  residentTax: number;
   employeeInsurance: number;
   healthInsurance: number;
   pensionInsurance: number;

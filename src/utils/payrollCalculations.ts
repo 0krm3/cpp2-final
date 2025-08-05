@@ -9,6 +9,17 @@ const getIncomeTaxRate = (income: number, dependents: number): number => {
   return 0.23;
 };
 
+// 住民税計算（簡略化）
+const calculateResidentTax = (annualIncome: number, dependents: number): number => {
+  const taxableIncome = annualIncome - (dependents * 33000); // 扶養控除
+  const basicDeduction = 430000; // 基礎控除
+  const adjustedIncome = Math.max(0, taxableIncome - basicDeduction);
+  
+  // 住民税率 10%（都道府県民税4% + 市町村民税6%）
+  const annualTax = Math.floor(adjustedIncome * 0.10);
+  return Math.floor(annualTax / 12); // 月割り
+};
+
 // 雇用保険料率
 const EMPLOYMENT_INSURANCE_RATE = 0.006;
 
@@ -28,16 +39,18 @@ export const calculatePayroll = (
   
   // 各種控除計算
   const incomeTax = Math.floor(grossPay * getIncomeTaxRate(grossPay * 12, employee.dependents));
+  const residentTax = calculateResidentTax(grossPay * 12, employee.dependents);
   const employeeInsurance = Math.floor(grossPay * EMPLOYMENT_INSURANCE_RATE);
   const healthInsurance = Math.floor(grossPay * HEALTH_INSURANCE_RATE);
   const pensionInsurance = Math.floor(grossPay * PENSION_INSURANCE_RATE);
   
-  const totalDeductions = incomeTax + employeeInsurance + healthInsurance + pensionInsurance;
+  const totalDeductions = incomeTax + residentTax + employeeInsurance + healthInsurance + pensionInsurance;
   const netPay = grossPay - totalDeductions;
 
   return {
     grossPay,
     incomeTax,
+    residentTax,
     employeeInsurance,
     healthInsurance,
     pensionInsurance,

@@ -42,6 +42,7 @@ export const usePayroll = () => {
           bonus: 0,
           grossPay: calculation.grossPay,
           incomeTax: calculation.incomeTax,
+          residentTax: calculation.residentTax,
           employeeInsurance: calculation.employeeInsurance,
           healthInsurance: calculation.healthInsurance,
           pensionInsurance: calculation.pensionInsurance,

@@ -298,7 +298,7 @@ function App() {
           }
         default:
           if (currentEmployee) {
-            return <PayslipView employee={currentEmployee} />;
+            return <PayslipView employee={currentEmployee} payrollRecords={payrollRecords} />;
           } else {
             return (
               <div className="text-center py-12">
