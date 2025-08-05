@@ -28,7 +28,7 @@ const PayrollDetails: React.FC<PayrollDetailsProps> = ({
 
   const exportPayrollData = () => {
     const csvContent = [
-      '従業員ID,氏名,部署,基本給,時間外手当,賞与,支給総額,所得税,雇用保険料,健康保険料,厚生年金保険料,控除総額,差引支給額',
+      '従業員ID,氏名,部署,基本給,時間外手当,賞与,支給総額,所得税,住民税,雇用保険料,健康保険料,厚生年金保険料,控除総額,差引支給額',
       ...records.map(record => {
         const employee = employees.find(emp => emp.id === record.employeeId);
         return [
@@ -40,6 +40,7 @@ const PayrollDetails: React.FC<PayrollDetailsProps> = ({
           record.bonus,
           record.grossPay,
           record.incomeTax,
+          record.residentTax,
           record.employeeInsurance,
           record.healthInsurance,
           record.pensionInsurance,
