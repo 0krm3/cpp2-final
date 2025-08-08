@@ -24,7 +24,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange, userRol
   const tabs = userRole === 'admin' ? adminTabs : employeeTabs;
 
   return (
-    <nav className="bg-white shadow-sm border-r border-gray-200 min-h-screen w-64">
+    <nav className="bg-white shadow-sm border-r border-gray-200 min-h-screen w-50">
       <div className="p-4">
         <div className="space-y-1">
           {tabs.map((tab) => {

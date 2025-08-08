@@ -199,8 +199,16 @@ const PayslipView: React.FC<PayslipViewProps> = ({ employee, payrollRecords }) =
                   <span className="font-medium text-red-600">-{formatCurrency(currentPayroll.healthInsurance)}</span>
                 </div>
                 <div className="flex justify-between items-center">
+                  <span className="text-gray-700">介護保険料</span>
+                  <span className="font-medium text-red-600">-{formatCurrency(currentPayroll.longTermCareInsurance)}</span>
+                </div>
+                <div className="flex justify-between items-center">
                   <span className="text-gray-700">厚生年金保険料</span>
                   <span className="font-medium text-red-600">-{formatCurrency(currentPayroll.pensionInsurance)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700">社会保険料</span>
+                  <span className="font-medium text-red-600">-{formatCurrency(currentPayroll.totalSocialInsurance)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-3 border-t border-gray-200 font-semibold">
                   <span className="text-gray-900">控除合計</span>

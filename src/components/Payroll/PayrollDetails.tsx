@@ -28,7 +28,7 @@ const PayrollDetails: React.FC<PayrollDetailsProps> = ({
 
   const exportPayrollData = () => {
     const csvContent = [
-      '従業員ID,氏名,部署,基本給,時間外手当,賞与,支給総額,所得税,住民税,雇用保険料,健康保険料,厚生年金保険料,控除総額,差引支給額',
+      '従業員ID,氏名,部署,基本給,時間外手当,支給総額,所得税,住民税,雇用保険料,健康保険料,介護保険料,厚生年金保険料,社会保険料,控除総額,差引支給額',
       ...records.map(record => {
         const employee = employees.find(emp => emp.id === record.employeeId);
         return [
@@ -37,13 +37,14 @@ const PayrollDetails: React.FC<PayrollDetailsProps> = ({
           employee?.department || '不明',
           record.baseSalary,
           record.overtime,
-          record.bonus,
           record.grossPay,
           record.incomeTax,
           record.residentTax,
           record.employeeInsurance,
           record.healthInsurance,
+          record.longTermCareInsurance,
           record.pensionInsurance,
+          record.totalSocialInsurance,
           record.totalDeductions,
           record.netPay
         ].join(',');
@@ -142,39 +143,52 @@ const PayrollDetails: React.FC<PayrollDetailsProps> = ({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   従業員
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   基本給
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   時間外手当
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   支給総額
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   所得税
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  住民税
+                </th>
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  雇用保険料
+                </th>
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  健康保険料
+                </th>
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  介護保険料
+                </th>
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  厚生年金保険料
+                </th>
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   社会保険料
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   控除総額
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   差引支給額
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {records.map((record) => {
-                const socialInsurance = record.employeeInsurance + record.healthInsurance + record.pensionInsurance;
-                
                 return (
                   <tr key={record.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 py-4 whitespace-nowrap">
                       <div>
                         <p className="text-sm font-medium text-gray-900">
                           {getEmployeeName(record.employeeId)}
@@ -185,25 +199,40 @@ const PayrollDetails: React.FC<PayrollDetailsProps> = ({
                         <p className="text-xs text-gray-400">ID: {record.employeeId}</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm text-gray-900">
                       {formatCurrency(record.baseSalary)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm text-gray-900">
                       {formatCurrency(record.overtime)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
                       {formatCurrency(record.grossPay)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm text-red-600">
                       -{formatCurrency(record.incomeTax)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600">
-                      -{formatCurrency(socialInsurance)}
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                      -{formatCurrency(record.residentTax)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-red-600">
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                      -{formatCurrency(record.employeeInsurance)}
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                      -{formatCurrency(record.healthInsurance)}
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                      -{formatCurrency(record.longTermCareInsurance)}
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                      -{formatCurrency(record.pensionInsurance)}
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm text-red-600">
+                      -{formatCurrency(record.totalSocialInsurance)}
+                    </td>
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium text-red-600">
                       -{formatCurrency(record.totalDeductions)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-700">
+                    <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-bold text-blue-700">
                       {formatCurrency(record.netPay)}
                     </td>
                   </tr>

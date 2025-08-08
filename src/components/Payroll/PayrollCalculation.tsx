@@ -240,9 +240,6 @@ const PayrollCalculation: React.FC<PayrollCalculationProps> = ({
                           承認
                         </button>
                       )}
-                      <button className="text-gray-600 hover:text-gray-900 p-1 hover:bg-gray-50 rounded transition-colors duration-150">
-                        <Download className="h-4 w-4" />
-                      </button>
                     </div>
                   </td>
                 </tr>

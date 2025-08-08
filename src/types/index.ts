@@ -9,13 +9,14 @@ export interface User {
 export interface Employee {
   id: string;
   name: string;
+  dateOfBirth: string;
   email: string;
   department: string;
+  position: string;
   baseSalary: number;
   dependents: number;
   municipality: string;
   joinDate: string;
-  position: string;
   isActive: boolean;
 }
 
@@ -32,7 +33,9 @@ export interface PayrollRecord {
   residentTax: number;
   employeeInsurance: number;
   healthInsurance: number;
+  longTermCareInsurance: number;
   pensionInsurance: number;
+  totalSocialInsurance: number;
   totalDeductions: number;
   netPay: number;
   createdAt: string;
@@ -44,7 +47,9 @@ export interface PayrollCalculation {
   residentTax: number;
   employeeInsurance: number;
   healthInsurance: number;
+  longTermCareInsurance: number;
   pensionInsurance: number;
+  totalSocialInsurance: number;
   totalDeductions: number;
   netPay: number;
 }

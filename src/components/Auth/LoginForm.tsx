@@ -24,9 +24,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, error }) => {
 
   const demoAccounts = [
     { email: 'admin@company.com', role: '管理者アカウント' },
-    { email: 'tanaka@company.com', role: '従業員アカウント（田中太郎 - 営業主任）' },
-    { email: 'yamada@company.com', role: '従業員アカウント（山田健一 - シニアエンジニア）' },
-    { email: 'suzuki@company.com', role: '従業員アカウント（鈴木美咲 - 人事担当）' }
+    { email: 'tanaka@company.com', role: '従業員アカウント（田中太郎 - 営業主任）' }
   ];
 
   return (
@@ -36,7 +34,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, error }) => {
           <Building2 className="h-12 w-12 text-blue-600" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          給与計算システム
+          Q-Mei
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           中小企業向けクラウドサービス

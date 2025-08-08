@@ -45,7 +45,9 @@ export const usePayroll = () => {
           residentTax: calculation.residentTax,
           employeeInsurance: calculation.employeeInsurance,
           healthInsurance: calculation.healthInsurance,
+          longTermCareInsurance: calculation.longTermCareInsurance,
           pensionInsurance: calculation.pensionInsurance,
+          totalSocialInsurance: calculation.totalSocialInsurance,
           totalDeductions: calculation.totalDeductions,
           netPay: calculation.netPay,
           createdAt: new Date().toISOString()

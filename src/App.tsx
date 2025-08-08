@@ -260,12 +260,22 @@ function App() {
                 <div className="bg-white shadow-sm rounded-lg p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
+                      <label className="block text-sm font-medium text-gray-700">従業員ID</label>
+                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.id}</p>
+                    </div>
+                    <div>
                       <label className="block text-sm font-medium text-gray-700">氏名</label>
                       <p className="mt-1 text-sm text-gray-900">{currentEmployee.name}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">従業員ID</label>
-                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.id}</p>
+                      <label className="block text-sm font-medium text-gray-700">生年月日</label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {new Date(currentEmployee.dateOfBirth).toLocaleDateString('ja-JP')}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">メールアドレス</label>
+                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.email}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">部署</label>
@@ -276,8 +286,12 @@ function App() {
                       <p className="mt-1 text-sm text-gray-900">{currentEmployee.position}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">メールアドレス</label>
-                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.email}</p>
+                      <label className="block text-sm font-medium text-gray-700">扶養人数</label>
+                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.dependents}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">居住地</label>
+                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.municipality}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">入社日</label>

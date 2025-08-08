@@ -12,9 +12,9 @@ interface AdminDashboardProps {
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
   employees, 
-  onAddEmployee, 
-  onCalculatePayroll, 
-  onBulkUpload 
+  // onAddEmployee, 
+  // onCalculatePayroll, 
+  // onBulkUpload 
 }) => {
   const activeEmployees = employees.filter(emp => emp.isActive);
   const totalSalary = activeEmployees.reduce((sum, emp) => sum + emp.baseSalary, 0);
@@ -168,7 +168,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">クイックアクション</h3>
         </div>
@@ -208,7 +208,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
