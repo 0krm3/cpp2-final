@@ -12,13 +12,14 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
   const [formData, setFormData] = useState<Partial<Employee>>({
     id: '',
     name: '',
+    dateOfBirth: '',
     email: '',
     department: '',
+    position: '',
     baseSalary: 0,
     dependents: 0,
     municipality: '東京都',
     joinDate: '',
-    position: '',
     isActive: true
   });
 
@@ -31,13 +32,14 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
       setFormData({
         id: '',
         name: '',
+        dateOfBirth: '',
         email: '',
         department: '',
+        position: '',
         baseSalary: 0,
         dependents: 0,
         municipality: '東京都',
         joinDate: new Date().toISOString().split('T')[0],
-        position: '',
         isActive: true
       });
     }
@@ -54,6 +56,10 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
       newErrors.name = '氏名は必須です';
     }
 
+    if (!formData.dateOfBirth?.trim()) {
+      newErrors.dateOfBirth = '生年月日は必須です';
+    }
+
     if (!formData.email?.trim()) {
       newErrors.email = 'メールアドレスは必須です';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -63,6 +69,10 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
     if (!formData.department?.trim()) {
       newErrors.department = '部署は必須です';
     }
+
+    if (!formData.position?.trim()) {
+          newErrors.position = '役職は必須です';
+        }
 
     if (!formData.baseSalary || formData.baseSalary < 0) {
       newErrors.baseSalary = '基本給は0以上の数値を入力してください';
@@ -74,10 +84,6 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
 
     if (!formData.joinDate) {
       newErrors.joinDate = '入社日は必須です';
-    }
-
-    if (!formData.position?.trim()) {
-      newErrors.position = '役職は必須です';
     }
 
     setErrors(newErrors);
@@ -142,6 +148,22 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
                 placeholder="田中太郎"
               />
               {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
+                生年月日 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                value={formData.dateOfBirth || ''}
+                onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.dateOfBirth ? 'border-red-300' : 'border-gray-300'
+                }`}
+              />
+              {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.joinDate}</p>}
             </div>
 
             <div>
@@ -228,23 +250,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
               />
               {errors.dependents && <p className="mt-1 text-sm text-red-600">{errors.dependents}</p>}
             </div>
-
-            <div>
-              <label htmlFor="joinDate" className="block text-sm font-medium text-gray-700 mb-2">
-                入社日 <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                id="joinDate"
-                value={formData.joinDate || ''}
-                onChange={(e) => handleChange('joinDate', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.joinDate ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
-              {errors.joinDate && <p className="mt-1 text-sm text-red-600">{errors.joinDate}</p>}
-            </div>
-
+            
             <div>
               <label htmlFor="municipality" className="block text-sm font-medium text-gray-700 mb-2">
                 居住地（自治体）
@@ -260,6 +266,22 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
                 <option value="埼玉県">埼玉県</option>
                 <option value="千葉県">千葉県</option>
               </select>
+            </div>
+            
+            <div>
+              <label htmlFor="joinDate" className="block text-sm font-medium text-gray-700 mb-2">
+                入社日 <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="joinDate"
+                value={formData.joinDate || ''}
+                onChange={(e) => handleChange('joinDate', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.joinDate ? 'border-red-300' : 'border-gray-300'
+                }`}
+              />
+              {errors.joinDate && <p className="mt-1 text-sm text-red-600">{errors.joinDate}</p>}
             </div>
 
             <div>

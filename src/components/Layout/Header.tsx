@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
           <div className="flex items-center">
             <Building2 className="h-8 w-8 text-blue-600 mr-3" />
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">給与計算システム</h1>
+              <h1 className="text-xl font-semibold text-gray-900">Q-Mei</h1>
               <p className="text-xs text-gray-500">中小企業向けクラウドサービス</p>
             </div>
           </div>

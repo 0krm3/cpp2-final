@@ -33,10 +33,22 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
   };
 
   const exportCSV = () => {
+    const header = 'ID,氏名,生年月日,メールアドレス,部署,役職,基本給,扶養人数,入社日,居住地';
     const csvContent = [
-      'ID,名前,部署,給与額,扶養人数',
+      header,
       ...employees.map(emp => 
-        `${emp.id},${emp.name},${emp.department},${emp.baseSalary},${emp.dependents}`
+        [
+          emp.id,
+          emp.name,
+          emp.dateOfBirth,
+          emp.email,
+          emp.department,
+          emp.position,
+          emp.baseSalary,
+          emp.dependents,
+          emp.municipality,
+          emp.joinDate
+        ].join(',')
       )
     ].join('\n');
 
@@ -106,6 +118,9 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   従業員
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  生年月日
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   部署・役職
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -113,6 +128,12 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   扶養人数
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  居住地
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  入社日
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   状態
@@ -134,6 +155,11 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
+                      <p className="text-sm text-gray-900">{employee.dateOfBirth}</p>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
                       <p className="text-sm text-gray-900">{employee.department}</p>
                       <p className="text-sm text-gray-500">{employee.position}</p>
                     </div>
@@ -145,6 +171,16 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <p className="text-sm text-gray-900">{employee.dependents}人</p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <p className="text-sm text-gray-900">{employee.municipality}</p>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <p className="text-sm text-gray-900">{employee.joinDate}</p>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -190,7 +226,8 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">従業員の削除確認</h3>
             <p className="text-gray-600 mb-6">
-              この従業員を削除してもよろしいですか？削除した従業員のデータは復元できません。
+              この従業員を削除してもよろしいですか？
+              <br />削除した従業員のデータは復元できません。
             </p>
             <div className="flex space-x-3 justify-end">
               <button

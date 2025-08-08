@@ -64,9 +64,14 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
         // 基本的な情報が変わったかチェック
         const isChanged = (
           existing.name !== newEmp.name ||
+          existing.dateOfBirth !== newEmp.dateOfBirth ||
+          existing.email !== newEmp.email ||
           existing.department !== newEmp.department ||
+          existing.position !== newEmp.position ||
           existing.baseSalary !== newEmp.baseSalary ||
-          existing.dependents !== newEmp.dependents
+          existing.dependents !== newEmp.dependents ||
+          existing.municipality !== newEmp.municipality ||
+          existing.joinDate !== newEmp.joinDate
         );
         
         if (isChanged) {
@@ -116,10 +121,10 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
     onUpload(finalEmployees);
   };
 
-  const sampleCsv = `ID,名前,部署,給与額,扶養人数
-12345,田中太郎,営業部,400000,1
-23456,佐藤花子,経理部,350000,0
-34567,山田健一,開発部,450000,2`;
+  const sampleCsv = `ID,氏名,生年月日,メールアドレス,部署,役職,基本給,扶養人数,居住地,入社日
+12345,田中太郎,1997-02-18,tanaka@company.com,営業部,営業主任,400000,1,東京都,2023-01-15
+23456,佐藤花子,2003-11-21,sato@company.com,経理部,経理担当,350000,0,東京都,2022-06-01,
+34567,山田健一,1980-08-07,yamada@company.com,開発部,システムエンジニア,450000,2,東京都,2022-09-01`;
 
   const downloadSample = () => {
     const blob = new Blob([sampleCsv], { type: 'text/csv;charset=utf-8;' });
@@ -180,13 +185,28 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
                       氏名
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      生年月日
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      メールアドレス
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       部署
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      役職
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       基本給
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       扶養人数
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      居住地
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      入社日
                     </th>
                   </tr>
                 </thead>
@@ -215,13 +235,28 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
                           {employee.name}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {employee.dateOfBirth}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {employee.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {employee.department}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {employee.position}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatCurrency(employee.baseSalary)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {employee.dependents}人
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {employee.municipality}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {employee.joinDate}
                         </td>
                       </tr>
                     );
