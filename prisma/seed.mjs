@@ -8,7 +8,7 @@ async function main() {
 
   // --- 1. 管理者ユーザーの作成 ---
   const adminPasswordHash = await bcrypt.hash('password', 10);
-  const adminUser = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'admin@company.com' },
     update: {},
     create: {
@@ -18,17 +18,16 @@ async function main() {
       passwordHash: adminPasswordHash,
     },
   });
-  console.log(`Created admin user: ${adminUser.email}`);
+  console.log(`Created admin user: admin@company.com`);
 
   // --- 2. 従業員データと、それに対応するユーザーを作成 ---
   const employeePasswordHash = await bcrypt.hash('password', 10);
   
-  // Employeeテーブルに従業員を作成
   const employee = await prisma.employee.upsert({
     where: { email: 'employee@company.com' },
     update: {},
     create: {
-      id: 'emp001', // 従業員IDを固定
+      id: 'emp001',
       name: '従業員',
       email: 'employee@company.com',
       department: '一般',
@@ -43,8 +42,7 @@ async function main() {
   });
   console.log(`Created employee: ${employee.name}`);
 
-  // Userテーブルに従業員用ユーザーを作成
-  const employeeUser = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'employee@company.com' },
     update: {},
     create: {
@@ -52,30 +50,19 @@ async function main() {
       name: employee.name,
       role: 'employee',
       passwordHash: employeePasswordHash,
-      employeeId: employee.id, // ★ UserとEmployeeを紐付ける
+      employeeId: employee.id,
     },
   });
-  console.log(`Created user for employee: ${employeeUser.email}`);
-  
+  console.log(`Created user for employee: employee@company.com`);
 
   console.log('Seeding finished.');
 }
 
 main()
   .catch((e) => {
-    console.error('Caught an error during seeding:');
-    // エラーオブジェクトがErrorインスタンスか確認し、より詳細な情報を出力
-    if (e instanceof Error) {
-        console.error(`Error Name: ${e.name}`);
-        console.error(`Error Message: ${e.message}`);
-        console.error(`Error Stack: ${e.stack}`);
-    } else {
-        console.error('The thrown object was not an Error instance:');
-        console.error(e);
-    }
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {
-    console.log('Disconnecting Prisma Client...');
     await prisma.$disconnect();
   });
