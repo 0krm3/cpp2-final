@@ -4,30 +4,22 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": false,
+    "noEmit": true,
     "jsx": "react-jsx",
-
-    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
-    /* Path Alias */
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     },
-    
-    /* Vercel Compatibility */
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },
-  "include": ["src", "api", "vite.config.ts", "prisma/seed.mjs"],
-  "exclude": ["node_modules"]
+  "include": ["src", "vite.config.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
