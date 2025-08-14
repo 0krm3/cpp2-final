@@ -4,7 +4,9 @@
     "composite": true,
     "module": "ESNext",
     "moduleResolution": "Node",
-    "noEmit": false
+    "noEmit": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": ["api"]
 }
