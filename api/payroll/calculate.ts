@@ -1,3 +1,25 @@
+// 外部ファイルから型をインポートするのをやめ、このファイル内で直接定義する
+interface SimpleEmployee {
+  id: string;
+  name: string;
+  dateOfBirth: Date;
+  dependents: number;
+  baseSalary: number;
+}
+
+interface PayrollCalculation {
+  grossPay: number;
+  incomeTax: number;
+  residentTax: number;
+  employeeInsurance: number;
+  healthInsurance: number;
+  longTermCareInsurance: number;
+  pensionInsurance: number;
+  totalSocialInsurance: number;
+  totalDeductions: number;
+  netPay: number;
+}
+
 // 雇用保険料率
 const EMPLOYMENT_INSURANCE_RATE = 0.006;
 // 健康保険料率
@@ -59,7 +81,7 @@ const calculateResidentTax = (annualIncome: number, dependents: number): number 
 };
 
 export const calculatePayroll = (
-  employee: SimpleEmployee,
+  employee: SimpleEmployee, // ★ 型をSimpleEmployeeに変更
   baseSalary: number,
   overtime: number = 0,
   bonus: number = 0
@@ -122,14 +144,7 @@ export default async function handler(
         throw new Error('No active employees found for calculation.');
       }
       
-      const calculationResults: Array<{
-        employeeId: string;
-        year: number;
-        month: string;
-        baseSalary: number;
-        overtime: number;
-        bonus: number;
-      } & PayrollCalculation> = [];
+      const calculationResults = [];
       for (const employee of employees) {
         // Prismaから取得したemployeeオブジェクトは、SimpleEmployeeと互換性がある
         const result = calculatePayroll(employee, employee.baseSalary);

@@ -10,7 +10,7 @@
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
+    "noEmit": false, // APIファイルをビルドするためにfalseに変更
     "jsx": "react-jsx",
 
     /* Linting */
@@ -29,5 +29,6 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },
-  "include": ["src", "api", "vite.config.ts", "prisma/seed.mjs"]
+  "include": ["src", "api", "vite.config.ts", "prisma/seed.mjs"],
+  "exclude": ["node_modules"]
 }
