@@ -5,47 +5,40 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "prisma:seed": "tsc --project prisma/tsconfig.seed.json && node prisma/seed.js"
+    "build": "prisma generate && tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@prisma/client": "5.12.1",
-    "axios": "^1.11.0",
-    "bcryptjs": "^3.0.2",
-    "csv-parse": "^6.1.0",
-    "formidable": "^3.5.4",
-    "html2canvas": "^1.4.1",
+    "axios": "^1.7.2",
+    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "jspdf": "^3.0.1",
-    "lucide-react": "^0.344.0",
+    "lucide-react": "^0.395.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.1",
-    "@types/bcryptjs": "^3.0.0",
-    "@types/formidable": "^3.4.5",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/react": "^18.3.5",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
     "@vitejs/plugin-react": "^4.3.1",
-    "autoprefixer": "^10.4.18",
-    "eslint": "^9.9.1",
-    "eslint-plugin-react-hooks": "^5.1.0-rc.0",
-    "eslint-plugin-react-refresh": "^0.4.11",
-    "globals": "^15.9.0",
-    "postcss": "^8.4.35",
+    "autoprefixer": "^10.4.19",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.7",
+    "postcss": "^8.4.38",
     "prisma": "5.12.1",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^3.4.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.3.0",
-    "vite": "^5.4.2",
-    "vite-tsconfig-paths": "^5.1.4"
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1",
+    "vite-tsconfig-paths": "^4.3.2"
   },
   "prisma": {
-    "seed": "node prisma/seed.mjs"
+    "seed": "tsc prisma/seed.ts --project prisma/tsconfig.seed.json && node prisma/seed.js"
   }
 }
