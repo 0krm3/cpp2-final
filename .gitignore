@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 .env
 .vercel
+
+/src/generated/prisma
+
+prisma/seed.js

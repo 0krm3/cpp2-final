@@ -9,28 +9,23 @@ interface EmployeeFormProps {
 }
 
 const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel }) => {
-  const [formData, setFormData] = useState<Partial<Employee>>({
-    id: '',
-    name: '',
-    dateOfBirth: '',
-    email: '',
-    department: '',
-    position: '',
-    baseSalary: 0,
-    dependents: 0,
-    municipality: '東京都',
-    joinDate: '',
-    isActive: true
-  });
+  const isNewMode = !employee;
 
+  const [formData, setFormData] = useState<Partial<Employee>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (employee) {
-      setFormData(employee);
-    } else {
+      // 編集モード：既存の従業員データをセット
       setFormData({
-        id: '',
+        ...employee,
+        // 日付をYYYY-MM-DD形式に変換
+        dateOfBirth: employee.dateOfBirth ? new Date(employee.dateOfBirth).toISOString().split('T')[0] : '',
+        joinDate: employee.joinDate ? new Date(employee.joinDate).toISOString().split('T')[0] : '',
+      });
+    } else {
+      // 新規登録モード：初期値をセット
+      setFormData({
         name: '',
         dateOfBirth: '',
         email: '',
@@ -48,43 +43,21 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.id?.trim()) {
+    if (!isNewMode && !formData.id?.trim()) {
       newErrors.id = '従業員IDは必須です';
     }
-
-    if (!formData.name?.trim()) {
-      newErrors.name = '氏名は必須です';
-    }
-
-    if (!formData.dateOfBirth?.trim()) {
-      newErrors.dateOfBirth = '生年月日は必須です';
-    }
-
+    if (!formData.name?.trim()) newErrors.name = '氏名は必須です';
+    if (!formData.dateOfBirth) newErrors.dateOfBirth = '生年月日は必須です';
     if (!formData.email?.trim()) {
       newErrors.email = 'メールアドレスは必須です';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = '有効なメールアドレスを入力してください';
     }
-
-    if (!formData.department?.trim()) {
-      newErrors.department = '部署は必須です';
-    }
-
-    if (!formData.position?.trim()) {
-          newErrors.position = '役職は必須です';
-        }
-
-    if (!formData.baseSalary || formData.baseSalary < 0) {
-      newErrors.baseSalary = '基本給は0以上の数値を入力してください';
-    }
-
-    if (formData.dependents === undefined || formData.dependents < 0) {
-      newErrors.dependents = '扶養人数は0以上の数値を入力してください';
-    }
-
-    if (!formData.joinDate) {
-      newErrors.joinDate = '入社日は必須です';
-    }
+    if (!formData.department?.trim()) newErrors.department = '部署は必須です';
+    if (!formData.position?.trim()) newErrors.position = '役職は必須です';
+    if (!formData.baseSalary || formData.baseSalary < 0) newErrors.baseSalary = '基本給は0以上の数値を入力してください';
+    if (formData.dependents === undefined || formData.dependents < 0) newErrors.dependents = '扶養人数は0以上の数値を入力してください';
+    if (!formData.joinDate) newErrors.joinDate = '入社日は必須です';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -93,13 +66,25 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSave(formData as Employee);
+      const dataWithDateObjects = {
+        ...formData,
+        joinDate: new Date(formData.joinDate!),
+        dateOfBirth: new Date(formData.dateOfBirth!),
+      };
+
+      const dataToSave = {
+        ...dataWithDateObjects,
+        id: isNewMode ? `temp-${Date.now()}` : formData.id,
+      };
+
+      console.log("1. [EmployeeForm] onSaveに渡すデータ:", dataToSave);
+      
+      onSave(dataToSave as Employee);
     }
   };
 
   const handleChange = (field: keyof Employee, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -109,29 +94,28 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">
-          {employee ? '従業員情報編集' : '新規従業員登録'}
+          {isNewMode ? '新規従業員登録' : '従業員情報編集'}
         </h2>
       </div>
 
       <div className="bg-white shadow-sm rounded-lg">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="id" className="block text-sm font-medium text-gray-700 mb-2">
-                従業員ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="id"
-                value={formData.id || ''}
-                onChange={(e) => handleChange('id', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.id ? 'border-red-300' : 'border-gray-300'
-                }`}
-                placeholder="12345"
-              />
-              {errors.id && <p className="mt-1 text-sm text-red-600">{errors.id}</p>}
-            </div>
+            
+            {!isNewMode && (
+              <div>
+                <label htmlFor="id" className="block text-sm font-medium text-gray-700 mb-2">
+                  従業員ID
+                </label>
+                <input
+                  type="text"
+                  id="id"
+                  value={formData.id || ''}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-200 bg-gray-100 rounded-md shadow-sm"
+                />
+              </div>
+            )}
 
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -163,7 +147,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ employee, onSave, onCancel 
                   errors.dateOfBirth ? 'border-red-300' : 'border-gray-300'
                 }`}
               />
-              {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.joinDate}</p>}
+              {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth}</p>}
             </div>
 
             <div>

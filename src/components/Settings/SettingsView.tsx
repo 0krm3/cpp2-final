@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Save, Building2, FileText, Calculator, AlertTriangle } from 'lucide-react';
 import { CompanySettings } from '../../types';
 
+// onSaveが非同期関数であることを明示
 interface SettingsViewProps {
   settings: CompanySettings;
-  onSave: (settings: CompanySettings) => void;
+  onSave: (settings: CompanySettings) => Promise<void>; 
 }
 
 const SettingsView: React.FC<SettingsViewProps> = ({ settings, onSave }) => {
@@ -15,14 +16,18 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onSave }) => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    
-    // 保存処理のシミュレーション
-    setTimeout(() => {
-      onSave(formData);
+    setSaveMessage(''); // 新しい保存処理の前にメッセージをクリア
+
+    try {
+      await onSave(formData);
+      setSaveMessage('設定が正常に保存されました！');
+    } catch (err) {
+      setSaveMessage('設定の保存中にエラーが発生しました。');
+      console.error('Save failed:', err);
+    } finally {
       setIsSaving(false);
-      setSaveMessage('設定が保存されました');
       setTimeout(() => setSaveMessage(''), 3000);
-    }, 500);
+    }
   };
 
   const handleChange = (field: keyof CompanySettings, value: any) => {
@@ -54,7 +59,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onSave }) => {
       </div>
 
       {saveMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-md p-4">
+        <div className={`bg-${saveMessage.includes('エラー') ? 'red' : 'green'}-50 border border-${saveMessage.includes('エラー') ? 'red' : 'green'}-200 rounded-md p-4`}>
           <p className="text-sm text-green-700">{saveMessage}</p>
         </div>
       )}

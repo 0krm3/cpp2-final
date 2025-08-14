@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Enum Definitions ---
+// TypeScriptの 'admin' | 'employee' のような型を定義
+enum Role {
+  admin
+  employee
+}
+
+enum PayrollStatus {
+  draft
+  calculated
+  approved
+  paid
+}
+
+// --- Model Definitions ---
+
+model User {
+  id         String    @id @default(cuid())
+  email      String    @unique
+  name       String
+  passwordHash String
+  role       Role // enum を使用
+  employeeId String? // オプショナルな従業員ID
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Employee {
+  id           String   @id @default(cuid())
+  name         String
+  dateOfBirth  DateTime
+  email        String   @unique
+  department   String
+  position     String
+  baseSalary   Int
+  dependents   Int
+  municipality String
+  joinDate     DateTime
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relation: 一人の従業員はたくさんの給与明細を持つ
+  payrollRecords PayrollRecord[]
+}
+
+model PayrollBatch {
+  id              String        @id @default(cuid())
+  month           String
+  year            Int
+  status          PayrollStatus
+  totalEmployees  Int
+  totalGrossPay   Int
+  totalDeductions Int
+  totalNetPay     Int
+  createdAt       DateTime      @default(now())
+  calculatedAt    DateTime?
+  approvedAt      DateTime?
+
+  // Relation: 一つのバッチにはたくさんの給与明細が含まれる
+  payrollRecords PayrollRecord[]
+}
+
+model PayrollRecord {
+  id                    String    @id @default(cuid())
+  month                 String
+  year                  Int
+  baseSalary            Int
+  overtime              Int
+  bonus                 Int
+  grossPay              Int
+  incomeTax             Int
+  residentTax           Int
+  employeeInsurance     Int
+  healthInsurance       Int
+  longTermCareInsurance Int
+  pensionInsurance      Int
+  totalSocialInsurance  Int 
+  totalDeductions       Int
+  netPay                Int
+  createdAt             DateTime  @default(now())
+
+  // Relation to Employee
+  employeeId            String
+  employee              Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  // Relation to PayrollBatch
+  batchId               String
+  batch                 PayrollBatch @relation(fields: [batchId], references: [id])
+}
+
+model CompanySettings {
+  id                        String  @id @default(cuid()) // 設定が一つだけでもIDを持つのが一般的
+  companyName               String
+  companyAddress            String
+  taxOffice                 String
+  socialInsuranceOffice     String
+  employmentInsuranceNumber String
+  healthInsuranceRate       Float // レートは小数点を含む可能性があるのでFloat
+  pensionInsuranceRate      Float
+  employmentInsuranceRate   Float
+  paymentDate               Int
+  closingDate               Int
+  updatedAt                 DateTime @updatedAt
+}

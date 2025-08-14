@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { BarChart3, Download, Calendar, TrendingUp, Users, DollarSign } from 'lucide-react';
 import { PayrollRecord, Employee, PayrollBatch } from '../../types';
-import { formatCurrency } from '../../utils/payrollCalculations';
+import { formatCurrency } from '@/utils/payrollCalculations';
 
 interface ReportsViewProps {
   payrollRecords: PayrollRecord[];

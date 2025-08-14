@@ -1,7 +1,7 @@
 import React from 'react';
 import { FileText, Download, User } from 'lucide-react';
 import { Employee, PayrollRecord } from '../../types';
-import { formatCurrency } from '../../utils/payrollCalculations';
+import { formatCurrency } from '@/utils/payrollCalculations';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 

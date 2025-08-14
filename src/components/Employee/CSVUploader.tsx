@@ -2,30 +2,32 @@ import React, { useState } from 'react';
 import { Upload, FileText, X, CheckCircle, AlertTriangle } from 'lucide-react';
 import { parseCSV, convertCSVToEmployee, CSVEmployee } from '../../utils/csvParser';
 import { Employee } from '../../types';
-import { formatCurrency } from '../../utils/payrollCalculations';
+import { formatCurrency } from '@/utils/payrollCalculations';
 
 interface CSVUploaderProps {
-  onUpload: (employees: Employee[]) => void;
+  onUpload: (file: File) => void;
   onCancel: () => void;
   existingEmployees: Employee[];
 }
 
 const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingEmployees }) => {
   const [isDragOver, setIsDragOver] = useState(false);
-  const [csvData, setCsvData] = useState<CSVEmployee[]>([]);
   const [previewEmployees, setPreviewEmployees] = useState<Employee[]>([]);
-  const [step, setStep] = useState<'upload' | 'preview' | 'confirm'>('upload');
+  const [step, setStep] = useState<'upload' | 'preview'>('upload');
   const [updateSummary, setUpdateSummary] = useState<{
     new: Employee[];
     updated: Employee[];
     unchanged: Employee[];
   }>({ new: [], updated: [], unchanged: [] });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFileSelect = (file: File) => {
     if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
       alert('CSVファイルを選択してください');
       return;
     }
+
+    setSelectedFile(file);
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -34,7 +36,6 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
         const parsedData = parseCSV(csvText);
         const employees = parsedData.map(convertCSVToEmployee);
         
-        setCsvData(parsedData);
         setPreviewEmployees(employees);
         setStep('preview');
         
@@ -61,7 +62,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
       if (!existing) {
         summary.new.push(newEmp);
       } else {
-        // 基本的な情報が変わったかチェック
+        // 全ての項目をチェックして変更があったか判断
         const isChanged = (
           existing.name !== newEmp.name ||
           existing.dateOfBirth !== newEmp.dateOfBirth ||
@@ -106,24 +107,15 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
   };
 
   const handleConfirmUpload = () => {
-    // 既存データと新データをマージ
-    const updatedEmployees = existingEmployees.map(existing => {
-      const newData = previewEmployees.find(newEmp => newEmp.id === existing.id);
-      return newData ? { ...existing, ...newData } : existing;
-    });
 
-    // 新規従業員を追加
-    const newEmployees = previewEmployees.filter(
-      newEmp => !existingEmployees.find(existing => existing.id === newEmp.id)
-    );
-
-    const finalEmployees = [...updatedEmployees, ...newEmployees];
-    onUpload(finalEmployees);
+    if (selectedFile) {
+      onUpload(selectedFile);
+    }
   };
 
   const sampleCsv = `ID,氏名,生年月日,メールアドレス,部署,役職,基本給,扶養人数,居住地,入社日
 12345,田中太郎,1997-02-18,tanaka@company.com,営業部,営業主任,400000,1,東京都,2023-01-15
-23456,佐藤花子,2003-11-21,sato@company.com,経理部,経理担当,350000,0,東京都,2022-06-01,
+23456,佐藤花子,2003-11-21,sato@company.com,経理部,経理担当,350000,0,東京都,2022-06-01
 34567,山田健一,1980-08-07,yamada@company.com,開発部,システムエンジニア,450000,2,東京都,2022-09-01`;
 
   const downloadSample = () => {
@@ -175,39 +167,17 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      状態
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      氏名
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      生年月日
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      メールアドレス
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      部署
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      役職
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      基本給
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      扶養人数
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      居住地
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      入社日
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状態</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">氏名</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">生年月日</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">メールアドレス</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">部署</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">役職</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">基本給</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">扶養人数</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">居住地</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">入社日</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -216,9 +186,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
                     const isUpdated = updateSummary.updated.find(emp => emp.id === employee.id);
                     
                     return (
-                      <tr key={employee.id} className={
-                        isNew ? 'bg-green-50' : isUpdated ? 'bg-orange-50' : 'bg-gray-50'
-                      }>
+                      <tr key={employee.id} className={ isNew ? 'bg-green-50' : isUpdated ? 'bg-orange-50' : '' }>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                             isNew ? 'bg-green-100 text-green-800' :
@@ -228,36 +196,16 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
                             {isNew ? '新規' : isUpdated ? '更新' : '変更なし'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.dateOfBirth}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.department}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.position}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(employee.baseSalary)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.dependents}人
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.municipality}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {employee.joinDate}
-                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.dateOfBirth}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.department}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.position}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(employee.baseSalary)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.dependents}人</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.municipality}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.joinDate}</td>
                       </tr>
                     );
                   })}
@@ -268,13 +216,14 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 mt-6">
               <button
                 onClick={() => setStep('upload')}
-                className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 戻る
               </button>
+
               <button
                 onClick={handleConfirmUpload}
-                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 アップロード実行
               </button>
@@ -307,7 +256,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
             
             <button
               onClick={downloadSample}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
               <FileText className="h-4 w-4 mr-2" />
               サンプルCSVダウンロード
@@ -330,7 +279,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
                 CSVファイルをここにドラッグ&ドロップ
               </p>
               <p className="text-sm text-gray-500 mt-1">または</p>
-              <label className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-colors duration-200">
+              <label className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 cursor-pointer">
                 <Upload className="h-4 w-4 mr-2" />
                 ファイルを選択
                 <input
@@ -365,7 +314,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, onCancel, existingE
           <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 mt-6">
             <button
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+              className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50"
             >
               <X className="h-4 w-4 mr-2 inline" />
               キャンセル

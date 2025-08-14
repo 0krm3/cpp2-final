@@ -10,10 +10,9 @@ export const mockUsers: User[] = [
   },
   {
     id: 'emp1',
-    email: 'tanaka@company.com',
-    name: '田中太郎',
-    role: 'employee',
-    employeeId: '12345'
+    email: 'test@example.com',
+    name: 'テストユーザー',
+    role: 'employee'
   }
 ];
 

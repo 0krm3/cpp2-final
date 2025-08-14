@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
 import { Edit, Trash2, Plus, Upload, Download, Search } from 'lucide-react';
 import { Employee } from '../../types';
-import { formatCurrency } from '../../utils/payrollCalculations';
+import { formatCurrency } from '@/utils/payrollCalculations';
+
+const formatDate = (dateValue: string | Date): string => {
+  // 引数が文字列で、かつ空でないかを確認
+  if (!dateValue) return '';
+
+  // 引数が Date オブジェクトでなければ、文字列として new Date() に渡す
+  const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 interface EmployeeListProps {
   employees: Employee[];
@@ -33,21 +46,21 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
   };
 
   const exportCSV = () => {
-    const header = 'ID,氏名,生年月日,メールアドレス,部署,役職,基本給,扶養人数,入社日,居住地';
+    const header = 'ID,氏名,生年月日,メールアドレス,部署,役職,基本給,扶養人数,居住地,入社日';
     const csvContent = [
       header,
       ...employees.map(emp => 
         [
           emp.id,
           emp.name,
-          emp.dateOfBirth,
+          formatDate(emp.dateOfBirth),
           emp.email,
           emp.department,
           emp.position,
           emp.baseSalary,
           emp.dependents,
           emp.municipality,
-          emp.joinDate
+          formatDate(emp.joinDate)
         ].join(',')
       )
     ].join('\n');
@@ -155,7 +168,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <p className="text-sm text-gray-900">{employee.dateOfBirth}</p>
+                      <p className="text-sm text-gray-900">{formatDate(employee.dateOfBirth)}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -179,7 +192,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <p className="text-sm text-gray-900">{employee.joinDate}</p>
+                      <p className="text-sm text-gray-900">{formatDate(employee.joinDate)}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calculator, Users, DollarSign, CheckCircle, AlertTriangle, Download } from 'lucide-react';
 import { Employee, PayrollBatch } from '../../types';
-import { formatCurrency } from '../../utils/payrollCalculations';
+import { formatCurrency } from '@/utils/payrollCalculations';
 
 interface PayrollCalculationProps {
   employees: Employee[];

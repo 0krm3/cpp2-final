@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Download, User, DollarSign } from 'lucide-react';
 import { PayrollRecord, Employee, PayrollBatch } from '../../types';
-import { formatCurrency } from '../../utils/payrollCalculations';
+import { formatCurrency } from '@/utils/payrollCalculations';
 
 interface PayrollDetailsProps {
   batch: PayrollBatch;

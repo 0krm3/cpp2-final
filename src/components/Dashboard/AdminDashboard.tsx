@@ -1,20 +1,17 @@
 import React from 'react';
 import { Users, Calculator, TrendingUp, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { Employee } from '../../types';
-import { formatCurrency } from '../../utils/payrollCalculations';
+import { formatCurrency } from '@/utils/payrollCalculations';
 
 interface AdminDashboardProps {
   employees: Employee[];
-  onAddEmployee: () => void;
-  onCalculatePayroll: () => void;
-  onBulkUpload: () => void;
+  // onAddEmployee: () => void;
+  // onCalculatePayroll: () => void;
+  // onBulkUpload: () => void;
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
   employees, 
-  // onAddEmployee, 
-  // onCalculatePayroll, 
-  // onBulkUpload 
 }) => {
   const activeEmployees = employees.filter(emp => emp.isActive);
   const totalSalary = activeEmployees.reduce((sum, emp) => sum + emp.baseSalary, 0);
@@ -166,49 +163,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Quick Actions */}
-      {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">クイックアクション</h3>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button 
-              onClick={onAddEmployee}
-              className="flex items-center justify-center px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors duration-200"
-            >
-              <div className="text-center">
-                <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-900">新規従業員登録</p>
-                <p className="text-xs text-gray-500">個別で従業員を追加</p>
-              </div>
-            </button>
-            
-            <button 
-              onClick={onCalculatePayroll}
-              className="flex items-center justify-center px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors duration-200"
-            >
-              <div className="text-center">
-                <Calculator className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-900">給与計算実行</p>
-                <p className="text-xs text-gray-500">今月分の給与を計算</p>
-              </div>
-            </button>
-            
-            <button 
-              onClick={onBulkUpload}
-              className="flex items-center justify-center px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors duration-200"
-            >
-              <div className="text-center">
-                <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-900">CSV一括登録</p>
-                <p className="text-xs text-gray-500">複数の従業員を一括追加</p>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div> */}
     </div>
   );
 };

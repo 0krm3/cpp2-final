@@ -24,7 +24,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, error }) => {
 
   const demoAccounts = [
     { email: 'admin@company.com', role: '管理者アカウント' },
-    { email: 'tanaka@company.com', role: '従業員アカウント（田中太郎 - 営業主任）' }
+    { email: 'employee@company.com', role: '従業員アカウント' }
   ];
 
   return (

@@ -1,69 +1,87 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Employee } from '../types';
-
-const mockEmployees: Employee[] = [
-  {
-    id: '12345',
-    name: '田中太郎',
-    dateOfBirth: '1990-01-01',
-    email: 'tanaka@company.com',
-    department: '営業部',
-    baseSalary: 400000,
-    dependents: 1,
-    municipality: '東京都',
-    joinDate: '2023-01-15',
-    position: '営業主任',
-    isActive: true
-  },
-];
+import * as api from '../services/api';
 
 export const useEmployees = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // シミュレート: ローカルストレージから従業員データを読み込み
-    const storedEmployees = localStorage.getItem('employees');
-    if (storedEmployees) {
-      setEmployees(JSON.parse(storedEmployees));
-    } else {
-      setEmployees(mockEmployees);
-      localStorage.setItem('employees', JSON.stringify(mockEmployees));
+  const fetchEmployees = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.getEmployees();
+      setEmployees(response.data);
+    } catch (err) {
+      setError('従業員データの取得に失敗しました。');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  const addEmployee = (employee: Employee) => {
-    const updatedEmployees = [...employees, employee];
-    setEmployees(updatedEmployees);
-    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees]);
+
+  
+  const addEmployee = async (employeeData: Employee) => {
+  try {
+    // APIに送るデータからidプロパティを確実に除外する
+    console.log("3. [useEmployees] App.tsxから受け取ったデータ:", employeeData);
+    const { id, ...dataToSend } = employeeData;
+    console.log("4. [useEmployees] APIに送信する直前のデータ (ID削除後):", dataToSend);
+    
+    await api.createEmployee(dataToSend);
+    fetchEmployees(); // データ再取得して画面を更新
+  } catch (err) {
+    console.error('Failed to add employee:', err);
+  }
+};
+
+  const updateEmployee = async (id: string, employeeData: Partial<Employee>) => {
+    try {
+      await api.updateEmployee(id, employeeData);
+      fetchEmployees(); // データ再取得して画面を更新
+    } catch (err) {
+      console.error('Failed to update employee:', err);
+      // TODO: ユーザーにエラーを通知する
+    }
   };
 
-  const updateEmployee = (id: string, updatedEmployee: Employee) => {
-    const updatedEmployees = employees.map(emp => 
-      emp.id === id ? updatedEmployee : emp
-    );
-    setEmployees(updatedEmployees);
-    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
+  const deleteEmployee = async (id: string) => {
+    if (window.confirm('本当にこの従業員を削除しますか？')) {
+      try {
+        await api.deleteEmployee(id);
+        fetchEmployees(); // データ再取得して画面を更新
+      } catch (err) {
+        console.error('Failed to delete employee:', err);
+        // TODO: ユーザーにエラーを通知する
+      }
+    }
+  };
+  
+  const bulkUpdateEmployees = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file); // API側で'file'というキーを期待
+    try {
+      await api.bulkUploadEmployees(formData);
+      fetchEmployees(); // データ再取得して画面を更新
+    } catch (err) {
+      console.error('Failed to bulk upload:', err);
+      // TODO: ユーザーにエラーを通知する
+    }
   };
 
-  const deleteEmployee = (id: string) => {
-    const updatedEmployees = employees.filter(emp => emp.id !== id);
-    setEmployees(updatedEmployees);
-    localStorage.setItem('employees', JSON.stringify(updatedEmployees));
-  };
-
-  const bulkUpdateEmployees = (newEmployees: Employee[]) => {
-    setEmployees(newEmployees);
-    localStorage.setItem('employees', JSON.stringify(newEmployees));
-  };
-
-  return {
-    employees,
-    loading,
-    addEmployee,
-    updateEmployee,
+  return { 
+    employees, 
+    loading, 
+    error,
+    addEmployee, 
+    updateEmployee, 
     deleteEmployee,
-    bulkUpdateEmployees
+    bulkUpdateEmployees,
+    refetch: fetchEmployees // 手動で再取得するための関数
   };
 };

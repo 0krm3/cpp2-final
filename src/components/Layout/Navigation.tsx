@@ -12,7 +12,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange, userRol
     { id: 'dashboard', name: 'ダッシュボード', icon: BarChart3 },
     { id: 'employees', name: '従業員管理', icon: Users },
     { id: 'payroll', name: '給与計算', icon: Calculator },
-    { id: 'reports', name: 'レポート', icon: FileText },
+    // { id: 'reports', name: 'レポート', icon: FileText },
     { id: 'settings', name: '設定', icon: Settings }
   ];
 

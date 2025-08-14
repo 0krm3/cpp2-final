@@ -11,8 +11,8 @@ import PayrollCalculation from './components/Payroll/PayrollCalculation';
 import PayrollDetails from './components/Payroll/PayrollDetails';
 import ReportsView from './components/Reports/ReportsView';
 import SettingsView from './components/Settings/SettingsView';
-import { User, Employee } from './types';
-import { getCurrentUser, setCurrentUser, logout, authenticateUser } from './utils/auth';
+import { User, Employee, PayrollRecord } from './types';
+import { login, getMe } from './services/api';
 import { useEmployees } from './hooks/useEmployees';
 import { usePayroll } from './hooks/usePayroll';
 import { useSettings } from './hooks/useSettings';
@@ -25,47 +25,90 @@ function App() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [loginError, setLoginError] = useState<string>('');
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
+  const [isAppLoading, setIsAppLoading] = useState(true);
+  const [detailRecords, setDetailRecords] = useState<PayrollRecord[]>([]);
+  
+  // 従業員用の給与明細を保存する専用のstateを追加
+  const [employeePayslips, setEmployeePayslips] = useState<PayrollRecord[]>([]);
 
-  const { employees, loading, addEmployee, updateEmployee, deleteEmployee, bulkUpdateEmployees } = useEmployees();
+  const { employees, loading: employeesLoading, addEmployee, updateEmployee, deleteEmployee, bulkUpdateEmployees } = useEmployees();
   const { 
-    payrollRecords, 
     payrollBatches, 
     loading: payrollLoading, 
     calculateMonthlyPayroll, 
     approveBatch, 
     getRecordsByBatch 
   } = usePayroll();
-  const { settings, updateSettings } = useSettings();
+  const { settings, loading: settingsLoading, error: settingsError, updateSettings } = useSettings();
 
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-      setActiveTab(currentUser.role === 'admin' ? 'dashboard' : 'payslip');
+    const token = localStorage.getItem('token');
+    if (token) {
+      getMe()
+        .then(response => {
+          setUser(response.data);
+          setActiveTab(response.data.role === 'admin' ? 'dashboard' : 'payslip');
+        })
+        .catch(() => localStorage.removeItem('token'))
+        .finally(() => setIsAppLoading(false));
+    } else {
+      setIsAppLoading(false);
     }
   }, []);
-
-  const handleLogin = (email: string, password: string) => {
-    const authenticatedUser = authenticateUser(email, password);
-    if (authenticatedUser) {
-      setUser(authenticatedUser);
-      setCurrentUser(authenticatedUser);
-      setActiveTab(authenticatedUser.role === 'admin' ? 'dashboard' : 'payslip');
-      setLoginError('');
+  
+  useEffect(() => {
+    if (selectedBatchId) {
+      const fetchDetails = async () => {
+        const records = await getRecordsByBatch(selectedBatchId);
+        setDetailRecords(records);
+      };
+      fetchDetails();
     } else {
-      setLoginError('メールアドレスまたはパスワードが間違っています');
+      setDetailRecords([]);
+    }
+  }, [selectedBatchId, getRecordsByBatch]);
+
+  // 従業員としてログインしており、給与バッチのデータが読み込めたら実行
+  useEffect(() => {
+    if (user?.role === 'employee' && payrollBatches.length > 0) {
+      const fetchAllPayslips = async () => {
+        // 全てのバッチに対するデータ取得処理（Promise）の配列を作成
+        const promises = payrollBatches.map(batch => getRecordsByBatch(batch.id));
+        // 全てのPromiseが完了するのを待つ
+        const results = await Promise.all(promises);
+        // 結果を一つの配列にまとめる
+        const allRecords = results.flat();
+        setEmployeePayslips(allRecords);
+      };
+      fetchAllPayslips();
+    }
+  }, [user, payrollBatches, getRecordsByBatch]);
+
+  const handleLogin = async (email: string, password: string) => {
+    setLoginError('');
+    try {
+      const response = await login({ email, password });
+      const { token } = response.data;
+      localStorage.setItem('token', token);
+      
+      const userResponse = await getMe();
+      setUser(userResponse.data);
+      setActiveTab(userResponse.data.role === 'admin' ? 'dashboard' : 'payslip');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || 'ログインに失敗しました。';
+      setLoginError(errorMessage);
     }
   };
 
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem('token');
     setUser(null);
     setActiveTab('dashboard');
     setSelectedEmployee(null);
     setShowEmployeeForm(false);
     setShowCSVUploader(false);
   };
-
+  
   const handleEmployeeSave = (employee: Employee) => {
     if (selectedEmployee) {
       updateEmployee(selectedEmployee.id, employee);
@@ -94,8 +137,8 @@ function App() {
     setShowCSVUploader(true);
   };
 
-  const handleCSVUpload = (newEmployees: Employee[]) => {
-    bulkUpdateEmployees(newEmployees);
+  const handleCSVUpload = (file: File) => {
+    bulkUpdateEmployees(file);
     setShowCSVUploader(false);
   };
 
@@ -108,7 +151,7 @@ function App() {
   };
 
   const handlePayrollCalculate = (month: string, year: number) => {
-    calculateMonthlyPayroll(employees, month, year);
+    calculateMonthlyPayroll(year, month);
   };
 
   const handleBatchApprove = (batchId: string) => {
@@ -123,12 +166,20 @@ function App() {
     setSelectedBatchId(null);
   };
 
+  if (isAppLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+  
   if (!user) {
     return <LoginForm onLogin={handleLogin} error={loginError} />;
   }
 
   const renderContent = () => {
-    if (loading || payrollLoading) {
+    if (employeesLoading || payrollLoading || settingsLoading) {
       return (
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
@@ -138,18 +189,24 @@ function App() {
         </div>
       );
     }
+    
+    if (settingsError) {
+        return (
+            <div className="text-center py-12 text-red-500">
+                <h2 className="text-xl font-bold mb-2">エラーが発生しました</h2>
+                <p>{settingsError}</p>
+            </div>
+        );
+    }
 
     if (user.role === 'admin') {
-      // 給与計算詳細画面
       if (selectedBatchId) {
         const batch = payrollBatches.find(b => b.id === selectedBatchId);
-        const records = getRecordsByBatch(selectedBatchId);
-        
         if (batch) {
           return (
             <PayrollDetails
               batch={batch}
-              records={records}
+              records={detailRecords}
               employees={employees}
               onBack={handleBackFromDetails}
             />
@@ -182,18 +239,8 @@ function App() {
 
       switch (activeTab) {
         case 'dashboard':
-          return (
-            <AdminDashboard 
-              employees={employees}
-              onAddEmployee={handleEmployeeAdd}
-              onCalculatePayroll={() => {
-                const currentMonth = new Date().getMonth() + 1;
-                const currentYear = new Date().getFullYear();
-                handlePayrollCalculate(currentMonth.toString(), currentYear);
-              }}
-              onBulkUpload={handleBulkUpload}
-            />
-          );
+          return <AdminDashboard employees={employees} />;
+        
         case 'employees':
           return (
             <EmployeeList
@@ -204,6 +251,7 @@ function App() {
               onBulkUpload={handleBulkUpload}
             />
           );
+
         case 'payroll':
           return (
             <PayrollCalculation
@@ -217,125 +265,102 @@ function App() {
         case 'reports':
           return (
             <ReportsView
-              payrollRecords={payrollRecords}
+              payrollRecords={detailRecords}
               payrollBatches={payrollBatches}
               employees={employees}
             />
           );
         case 'settings':
-          return (
-            <SettingsView
-              settings={settings}
-              onSave={updateSettings}
-            />
-          );
+          if (settings) {
+            return (
+              <SettingsView
+                settings={settings}
+                onSave={updateSettings}
+              />
+            );
+          }
+          return null;
         default:
           return <AdminDashboard employees={employees} />;
       }
     } else {
-      // 従業員用画面
-      const currentEmployee = employees.find(emp => emp.id === user.employeeId);
+      const currentEmployee = employees.find(emp => emp.email === user.email);
       
+      if (!currentEmployee) {
+        return (
+          <div className="text-center py-12">
+            <p className="text-gray-600">従業員情報が見つかりません</p>
+          </div>
+        );
+      }
+
       switch (activeTab) {
         case 'payslip':
-          if (currentEmployee) {
-            return (
-              <PayslipView 
-                employee={currentEmployee} 
-                payrollRecords={payrollRecords}
-              />
-            );
-          } else {
-            return (
-              <div className="text-center py-12">
-                <p className="text-gray-600">従業員情報が見つかりません</p>
-              </div>
-            );
-          }
+          return (
+            <PayslipView 
+              employee={currentEmployee} 
+              payrollRecords={employeePayslips}
+            />
+          );
         case 'profile':
-          if (currentEmployee) {
-            return (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900">個人情報</h2>
-                <div className="bg-white shadow-sm rounded-lg p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">従業員ID</label>
-                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.id}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">氏名</label>
-                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.name}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">生年月日</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {new Date(currentEmployee.dateOfBirth).toLocaleDateString('ja-JP')}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">メールアドレス</label>
-                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.email}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">部署</label>
-                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.department}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">役職</label>
-                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.position}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">扶養人数</label>
-                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.dependents}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">居住地</label>
-                      <p className="mt-1 text-sm text-gray-900">{currentEmployee.municipality}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">入社日</label>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {new Date(currentEmployee.joinDate).toLocaleDateString('ja-JP')}
-                      </p>
-                    </div>
+          return (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-gray-900">個人情報</h2>
+              <div className="bg-white shadow-sm rounded-lg p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">氏名</label>
+                    <p className="mt-1 text-sm text-gray-900">{currentEmployee.name}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">従業員ID</label>
+                    <p className="mt-1 text-sm text-gray-900">{currentEmployee.id}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">部署</label>
+                    <p className="mt-1 text-sm text-gray-900">{currentEmployee.department}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">役職</label>
+                    <p className="mt-1 text-sm text-gray-900">{currentEmployee.position}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">メールアドレス</label>
+                    <p className="mt-1 text-sm text-gray-900">{currentEmployee.email}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">入社日</label>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {new Date(currentEmployee.joinDate).toLocaleDateString('ja-JP')}
+                    </p>
                   </div>
                 </div>
               </div>
-            );
-          } else {
-            return (
-              <div className="text-center py-12">
-                <p className="text-gray-600">従業員情報が見つかりません</p>
-              </div>
-            );
-          }
+            </div>
+          );
         default:
-          if (currentEmployee) {
-            return <PayslipView employee={currentEmployee} payrollRecords={payrollRecords} />;
-          } else {
-            return (
-              <div className="text-center py-12">
-                <p className="text-gray-600">従業員情報が見つかりません</p>
-              </div>
-            );
-          }
+          return (
+            <PayslipView 
+              employee={currentEmployee} 
+              payrollRecords={employeePayslips}
+            />
+          );
       }
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <Header user={user} onLogout={handleLogout} />
       
       <div className="flex">
-        <Navigation 
+        {user && <Navigation 
           activeTab={activeTab} 
           onTabChange={handleTabChange} 
           userRole={user.role} 
-        />
+        />}
         
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {renderContent()}
           </div>
